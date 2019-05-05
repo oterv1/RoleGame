@@ -1,0 +1,363 @@
+/*
+	
+		Vladimir Otero
+
+		This program is a game which prompt the user for a character and weapon, the using random numbers
+		it will determine the score of each player. The character has a value in points also.
+
+	Input: Prompt the user to select a character and weapon , once the game is over enter his/her userName.
+
+
+	Proccess: 1-Prompt User for character, weapon and userName.
+			  2-Generate a random number for the shooting range (1-4) and the magic potion(0-1)
+			  3-Save and determine the highest score that an x player had , always keep the one with the highest score.
+			  4-Display the information (score,file content and shooting results).
+
+
+	Output: Display the results of the random choices , final score and userName.
+*/
+//headers
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <cmath>
+#include <ctime>
+#include <random>
+using namespace std;
+
+//function prototype
+void showMenu();
+int shootingRange(int &, char &);
+int magicPotion(int &, char &);
+void displayResults(int, string);
+void saveFile(int, string);
+
+
+int main()
+{
+	//variables constants
+	int points = 0;
+	int choice;
+	string userID;
+
+	//intro 
+	cout << "\nRole Playing Game..." << endl << endl;
+
+	//menu-driven interface
+	do {
+		//Game menu
+		showMenu();        //fuction will display the general menu choice.
+		cin >> choice;     //read the choice
+		cin.ignore();      //clean buffer
+
+		//Game choices
+		switch (choice)
+		{
+		case 1:   //Show Rules
+			cout << "\nRules: " << endl
+				<< "First, you can select a character (Human, Ogre or Elf)" << endl
+				<< "You will be given points depending on the character you choose" << endl
+				<< "Once you select the character automatically you will go to the weapon selection menu " << endl
+				<< "Depending on the weapon you choose, you will be able to execute an activity for it and try to gain points with it" << endl
+				<< "Once you finish the game, you will enter your user name in order to see your score and save it to competer with other players" << endl
+				<< "Good Luck." << endl << endl;
+			break;
+
+		case 2: //Play Game
+			//Variables used inside the game options
+			int character, weapon;
+			int finalScore;
+			char letter;
+
+			//validate the charater choices(1-3)
+			do {
+				//character menu
+				cout << "\nChoose you character: " << endl
+					<< "\t1-Human" << endl
+					<< "\t2-Ogre" << endl
+					<< "\t3-Elf" << endl
+					<< "Enter character: ";
+				cin >> character;     //read the choice
+
+				//message displayed in case of wrong choice entered
+				if (character < 1 || character > 3)
+					cout << "\tIncorrect Character...Try again." << endl;
+
+			} while (character < 1 || character > 3);
+
+			// boolean statement that will assign points for character selection
+			if (character == 1)
+				points += 100;
+			if (character == 2)
+				points += 200;
+			if (character == 3)
+				points += 300;
+
+			//do-while loop validates the weapon choice(1-3)
+			do {
+				//weapons menu
+				cout << "\nChoose your weapon: " << endl
+					<< "\t1-Flame Thrower" << endl
+					<< "\t2-Bow and Arrow " << endl
+					<< "\t3-Magic Potion " << endl
+					<< "Choose the Weapon: ";
+				cin >> weapon;     //read the choice
+
+				if (weapon < 1 || weapon > 3)
+					cout << "\n\tIncorrect Weapon....Try Again." << endl;
+
+			} while (weapon < 1 || weapon > 3);
+
+			//in case of weapon 1 and 2 , the function will return a letter that will evaluate how the shooting scored
+			if (weapon == 1 || weapon == 2)
+			{
+				cout << "You are at the shooting range....shooting. " << endl;
+				finalScore = shootingRange(points, letter);   //funtion returns the points and letter depending on the random number
+
+				//conditional statements evaluate the shooting results
+				if (letter == 'A')
+					cout << "\nGood, you hit the target." << endl;
+				if (letter == 'B')
+					cout << "\nVery Good, almost hit the center." << endl;
+				if (letter == 'C')
+					cout << "\nExcellent, you hit the center." << endl;
+				if (letter == 'D')
+					cout << "\nSorry, you didn't hit the target." << endl;
+			}
+			else
+			{
+				//weapon number 3 is the magic potion 
+				cout << "\nTrying to get the magic potion.. good luck." << endl;
+				finalScore = magicPotion(points, letter); //magic potion fuction returns a (0-1) value which determine if it was selected or not
+
+				//show results of the magic potion fuction
+				if (letter == 'A')
+					cout << "\nGood, you got the magic potion." << endl;
+				if (letter == 'B')
+					cout << "\nSorry, you didn't get the magic potion" << endl;
+			}
+			//here the user enters his/her userID that will be linked with the points
+			cout << "\nPlease enter your user ID in order to check your final score: ";
+			cin >> userID;
+
+			//Display Final Results
+			displayResults(finalScore, userID);
+
+			//Save Results in the file
+			saveFile(finalScore, userID);
+
+			break;
+
+
+		case 3: //Exit Game
+			cout << "\nGood Bye..." << endl << endl;
+			break;
+		default:
+			cout << "\nInvalid Choice...Try again." << endl; // incorrect game choice message
+
+
+
+		}
+
+
+		//this statement sets the points to zero for the new game that will be played
+		if (choice == 2)
+			points = 0;
+
+
+	} while (choice != 3);  // do-while which validate the general menu
+
+
+	//exit main function
+	system("pause");
+	return 0;
+}
+
+
+/*
+	void showMenu()
+	function display the main menu of the game
+	return: void ,no data type
+
+*/
+void showMenu()
+{
+	//game's main menu
+	cout << "\nMain Menu: " << endl;
+	cout << "\t1-See Rules" << endl;
+	cout << "\t2-Play Game" << endl;
+	cout << "\t3-Exit Game" << endl;
+	cout << "Enter Choice: ";
+
+}
+
+/*
+  int shootingRange(int &score, char &letter)
+  this function generates a (1-4) random number which will determine
+  and simulate a shooting section.
+  paramenter are passed by reference to the arguments in order to modify the score and return the letter
+  return value: integer
+
+*/
+int shootingRange(int &score, char &letter)
+{
+	//shooting simulator
+	int random;
+
+	//current time
+	srand(time(NULL));
+
+	//random 1-4
+	random = rand() % 4 + 1;
+	//this set of statements determine the score return with the letter assigned
+	if (random == 1)
+	{
+		score += 100;
+		letter = 'A';
+	}
+	if (random == 2)
+	{
+		score += 200;
+		letter = 'B';
+	}
+	if (random == 3)
+	{
+		score += 300;
+		letter = 'C';
+	}
+	if (random == 4)
+	{
+		score += 0;
+		letter = 'D';
+	}
+	//return type int , end of function
+	return score;
+}
+
+/*
+	 int magicPotion(int &score ,char &letter)
+	 function uses a random number (0-1) to determine weather or not the magic
+	 potion was taken.
+	 the parameters are passed to the aregument by reference in order to modify the score and the letter which link with the message
+	 displayed in the main function
+	 return type: integer
+
+*/
+int magicPotion(int &score, char &letter)
+{
+	//potion simulator
+	int random;
+
+	//current time
+	srand(time(NULL));
+
+	//random 1-4
+	random = rand() % 2;
+
+	//statements determine the score and letter depening on the random number 
+	if (random == 1)
+	{
+		score += 200;
+		letter = 'A';
+	}
+	if (random == 0)
+	{
+		score -= 100;
+		letter = 'B';
+	}
+	//return type integer, end of the function
+	return score;
+}
+
+
+/*
+   void displayResults(int score, string user)
+   function objetive is to display the final score and userName of the player who just finished the game
+   parameters are passed by value because is not necessary to modify the arguments in the main function
+   return type, void.
+
+
+*/
+void displayResults(int score, string user)
+{
+	//display final score and userName
+	cout << "\nTotal Score..." << endl;
+	cout << "User ID \t Final Score" << endl;
+	cout << "--------------------------" << endl;
+	cout << user << "\t\t " << score << endl;
+	//end of the function, no return value
+	return;
+
+}
+
+/*
+   void saveFile(int score, string user)
+   following function write and read the file in order to compare and store the highest score played by a user
+   parameters are passed by value because there is no need to modify the arguments , just display information
+   return type: void , none
+
+*/
+void saveFile(int score, string user)
+{
+	string filename = "highscore.txt"; //string that has the filename(set into my desktop ,change its destination)
+
+	ofstream opFile;  //variable assigned to write the file
+	ifstream ipFile;  //variable assigned to read the file
+	int highScore = 0;  //varible create to compare score
+	string passUser;  //variable created to compare userNames
+	;
+	//Intro
+
+	cout << "\nHighest Records of the Game..." << endl;
+
+	
+
+	
+
+	//read the file for further comparison
+
+	ipFile.open(filename); //open file read
+
+	if (ipFile)
+	{
+		
+			ipFile >> passUser;
+			ipFile >> highScore;
+			
+		
+	}
+	else
+		cout << "\tNo record to compare yet." << endl;
+
+	ipFile.close();  //close file
+
+
+	//write the highest score , conditional statements set to compare the highest value
+	opFile.open(filename);  //open file write
+	if (opFile) {
+		//condtionals for comparison
+		if (score > highScore)
+		{
+
+			opFile << user << "\t" << score << endl;
+			cout << user << "\t" << score << endl;
+
+		}
+		else
+		{
+			opFile << passUser << "\t" << highScore << endl;
+			cout << passUser << "\t" << highScore << endl;
+
+		}
+	}
+	else
+		cout << "\tError ... No file open." << endl;
+	opFile.close(); //closing file
+
+	
+
+
+
+	return; //no value returned , end function
+}
